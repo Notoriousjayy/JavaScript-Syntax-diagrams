@@ -20,32 +20,38 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
+      # IMPORTANT: configure-pages must run before the build so we can use base_path
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
-      
+          node-version: "20.x"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Type check
         run: npm run typecheck
-      
+
       - name: Check grammar coverage
         run: npm run check-grammar
-      
+
       - name: Build
         run: npm run build
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      
+        env:
+          # GitHub Pages project sites are served at /<repo>/.
+          # Ensure trailing slash for webpack publicPath.
+          PUBLIC_PATH: ${{ steps.pages.outputs.base_path }}/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: "./dist"
 
   deploy:
     environment:
