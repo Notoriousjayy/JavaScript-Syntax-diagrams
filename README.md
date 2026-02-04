@@ -1,115 +1,124 @@
-# JavaScript Syntax Diagrams
+# ECMAScript 2025 Syntax Diagrams
 
-Interactive railroad diagrams (syntax diagrams) for JavaScript, based on the ECMAScript 5.1 Edition specification (ECMA-262).
+A React + TypeScript single-page app that renders **ECMAScript 2025 grammar railroad diagrams** (SVG) and shows each rule's **EBNF text** underneath. The grammar is implemented as "diagram factories" that produce railroad-diagram objects.
 
-## Overview
+## Features
 
-This project provides a visual representation of JavaScript's grammar using railroad diagrams. These diagrams make it easier to understand the syntax structure of JavaScript by providing a graphical alternative to BNF notation.
+- **Railroad Diagrams**: Visual representation of ECMAScript 2025 grammar rules using SVG
+- **EBNF Definitions**: Collapsible EBNF notation below each diagram
+- **Section Navigation**: Grammar rules organized by specification section (Lexical, Expressions, Statements, etc.)
+- **Search/Filter**: Filter rules by name
+- **Dark Mode**: Automatic dark mode support
+- **Lazy Rendering**: Sections are collapsed by default for performance with large grammar sets
 
-The grammar rules are organized by specification section:
-- **§6 Source Text** - Source characters
-- **§7 Lexical Conventions** - Input elements, whitespace, line terminators, comments, tokens
-- **§7.6 Identifiers** - Identifier names, reserved words, keywords
-- **§7.7 Punctuators** - Operators and punctuation
-- **§7.8 Literals (Numeric)** - Decimal and hexadecimal numbers
-- **§7.8.4 String Literals** - String syntax, escape sequences
-- **§7.8.5 Regular Expression Literals** - Regex syntax
-- **§11 Expressions** - All expression types, operators, precedence
-- **§12 Statements** - Control flow, loops, declarations, try/catch
-- **§13 Function Definition** - Function declarations and expressions
-- **§14 Program** - Top-level program structure
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm
-
-### Installation
+## Quick Start
 
 ```bash
+# Install dependencies
 npm install
-```
 
-### Development
-
-Start the development server:
-
-```bash
+# Run development server
 npm run dev
-```
 
-The application will be available at `http://localhost:5175`.
-
-### Production Build
-
-```bash
+# Build for production
 npm run build
-```
 
-The built files will be in the `dist/` directory.
+# Preview production build
+npm run preview
 
-### Type Checking
-
-```bash
+# Type check
 npm run typecheck
+
+# Check grammar coverage (diagram ↔ EBNF sync)
+npm run check-grammar
 ```
-
-## Technology Stack
-
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Webpack 5** - Bundling
-- **@prantlf/railroad-diagrams** - Railroad diagram generation
 
 ## Project Structure
 
 ```
-js-syntax-diagrams/
 ├── src/
-│   ├── main.tsx                          # Entry point
+│   ├── main.tsx                    # Entry point
 │   ├── app/
-│   │   ├── App.tsx                       # Main application component
-│   │   └── styles.css                    # Global styles
+│   │   ├── App.tsx                 # Main application component
+│   │   └── styles.css              # Global styles
 │   ├── components/
-│   │   ├── RuleDiagram.tsx               # Individual rule diagram
-│   │   └── RuleList.tsx                  # List of rule diagrams
+│   │   ├── RuleDiagram.tsx         # Individual rule diagram renderer
+│   │   └── RuleList.tsx            # List of rule diagrams
 │   ├── features/
 │   │   └── grammar/
-│   │       └── jsGrammar.ts              # JavaScript grammar definitions
+│   │       ├── es2025Grammar.ts    # Diagram factories & section definitions
+│   │       └── ebnfDefinitions.ts  # EBNF text definitions
 │   ├── shared/
 │   │   └── railroad/
-│   │       └── diagramToSvg.ts           # SVG rendering utility
+│   │       └── diagramToSvg.ts     # SVG conversion utility
 │   └── types/
-│       └── railroad-diagrams.d.ts        # Type declarations
+│       └── railroad-diagrams.d.ts  # Type declarations
+├── scripts/
+│   └── check-grammar-coverage.mjs  # Grammar/EBNF drift detection
 ├── .github/
-│   ├── dependabot.yml
-│   └── workflows/
-│       ├── codeql.yml
-│       ├── dependency-review.yml
-│       └── pages.yml
-├── index.html
-├── package.json
-├── tsconfig.json
-├── tsconfig.webpack.json
-└── webpack.config.cjs
+│   ├── workflows/
+│   │   ├── pages.yml               # GitHub Pages deployment
+│   │   ├── ci.yml                  # CI pipeline with typecheck
+│   │   ├── codeql.yml              # Security scanning
+│   │   └── dependency-review.yml   # Dependency vulnerability review
+│   └── dependabot.yml              # Automated dependency updates
+└── webpack.config.cjs              # Webpack configuration
 ```
+
+## CI/CD
+
+The project uses GitHub Actions for:
+
+1. **Type Safety**: `npm run typecheck` runs before every build
+2. **Grammar Coverage**: `npm run check-grammar` ensures diagram factories and EBNF definitions stay in sync
+3. **Security Scanning**: CodeQL analysis on push/PR and weekly schedule
+4. **Dependency Review**: Checks PRs for vulnerable dependencies
+5. **Automated Deployment**: GitHub Pages deployment on push to main
+
+## Development Notes
+
+### Adding New Grammar Rules
+
+1. Add the diagram factory in `src/features/grammar/es2025Grammar.ts`:
+   ```typescript
+   rules.set("MyNewRule", () =>
+     Diagram(
+       Sequence(T("keyword"), NT("Identifier"))
+     )
+   );
+   ```
+
+2. Add the EBNF definition in `src/features/grammar/ebnfDefinitions.ts`:
+   ```typescript
+   "MyNewRule": `MyNewRule :
+       keyword Identifier`,
+   ```
+
+3. Add the rule to the appropriate section in `SECTION_RULES`
+
+4. Run `npm run check-grammar` to verify coverage
+
+### SVG Trust Boundary
+
+The `RuleDiagram` component uses `dangerouslySetInnerHTML` to render SVG. This is safe because:
+- SVG is generated locally from deterministic factories
+- No untrusted user input is processed
+- If external grammar loading is added in the future, implement defensive sanitization
 
 ## Grammar Coverage
 
-This project covers the complete ECMAScript 5.1 grammar including:
+This project covers the ECMAScript 2025 grammar including:
 
-- **Lexical Grammar**: Tokens, identifiers, literals, comments
-- **Expressions**: Primary, member, call, unary, binary, conditional, assignment
-- **Statements**: Block, variable, empty, expression, if, iteration, continue, break, return, with, switch, labelled, throw, try, debugger
-- **Functions**: Declarations, expressions, parameters, body
-- **Program**: Source elements structure
+- **A.1 Lexical Grammar**: Source text, input elements, whitespace, comments, tokens, identifiers, literals
+- **A.2 Expressions**: Primary, member, call, optional chaining, update, unary, binary, conditional, assignment
+- **A.3 Statements**: Block, variable, if, iteration, switch, try/catch, labelled, debugger
+- **A.4 Functions and Classes**: Function declarations/expressions, arrow functions, generators, async functions, classes
+- **A.5 Scripts and Modules**: Script, module, import/export declarations
 
 ## References
 
-- [ECMA-262 5.1 Edition](https://262.ecma-international.org/5.1/)
-- [ECMAScript Language Specification](https://tc39.es/ecma262/)
+- [ECMAScript 2025 Language Specification](https://tc39.es/ecma262/)
+- [ECMA-262 Annex A Grammar Summary](https://tc39.es/ecma262/#sec-grammar-summary)
 - [Railroad Diagram (Wikipedia)](https://en.wikipedia.org/wiki/Syntax_diagram)
 
 ## License
